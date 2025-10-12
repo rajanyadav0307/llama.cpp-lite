@@ -198,24 +198,6 @@ if (NOT LLAMA_BUILD_COMMON)
     set(LLAMA_CURL OFF)
 endif()
 
-if (LLAMA_BUILD_COMMON)
-    add_subdirectory(common)
-endif()
-
-if (LLAMA_BUILD_COMMON AND LLAMA_BUILD_TESTS AND NOT CMAKE_JS_VERSION)
-    include(CTest)
-    add_subdirectory(tests)
-endif()
-
-if (LLAMA_BUILD_COMMON AND LLAMA_BUILD_EXAMPLES)
-    add_subdirectory(examples)
-    add_subdirectory(pocs)
-endif()
-
-if (LLAMA_BUILD_COMMON AND LLAMA_BUILD_TOOLS)
-    add_subdirectory(tools)
-endif()
-
 #
 # install
 #

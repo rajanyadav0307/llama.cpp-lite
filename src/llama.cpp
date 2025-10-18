@@ -1,6 +1,5 @@
 #include "llama-impl.h"
 
-#include "llama-chat.h"
 #include "llama-mmap.h"
 #include "llama-vocab.h"
 #include "llama-model-loader.h"
@@ -323,41 +322,6 @@ void llama_model_save_to_file(const struct llama_model * model, const char * pat
     ms.add_kv_from_model();
     ms.add_tensors_from_model();
     ms.save(path_model);
-}
-
-//
-// chat templates
-//
-
-int32_t llama_chat_apply_template(
-                              const char * tmpl,
-         const struct llama_chat_message * chat,
-                                  size_t   n_msg,
-                                    bool   add_ass,
-                                    char * buf,
-                                 int32_t   length) {
-    const std::string curr_tmpl(tmpl == nullptr ? "chatml" : tmpl);
-
-    // format the chat to string
-    std::vector<const llama_chat_message *> chat_vec;
-    chat_vec.resize(n_msg);
-    for (size_t i = 0; i < n_msg; i++) {
-        chat_vec[i] = &chat[i];
-    }
-
-    std::string formatted_chat;
-    llm_chat_template detected_tmpl = llm_chat_detect_template(curr_tmpl);
-    if (detected_tmpl == LLM_CHAT_TEMPLATE_UNKNOWN) {
-        return -1;
-    }
-    int32_t res = llm_chat_apply_template(detected_tmpl, chat_vec, formatted_chat, add_ass);
-    if (res < 0) {
-        return res;
-    }
-    if (buf && length > 0) {
-        strncpy(buf, formatted_chat.c_str(), length);
-    }
-    return res;
 }
 
 //

@@ -2646,7 +2646,7 @@ uint32_t llama_sampler_get_seed(const struct llama_sampler * smpl) {
 }
 
 // perf
-
+#ifdef LLAMA_USE_PERF
 struct llama_perf_sampler_data llama_perf_sampler(const struct llama_sampler * chain) {
     struct llama_perf_sampler_data data = {};
 
@@ -2662,12 +2662,14 @@ struct llama_perf_sampler_data llama_perf_sampler(const struct llama_sampler * c
     return data;
 }
 
+
 void llama_perf_sampler_print(const struct llama_sampler * chain) {
     const auto data = llama_perf_sampler(chain);
 
     LLAMA_LOG_INFO("%s:    sampling time = %10.2f ms / %5d runs   (%8.2f ms per token, %8.2f tokens per second)\n",
             __func__, data.t_sample_ms, data.n_sample, data.t_sample_ms / data.n_sample, 1e3 / data.t_sample_ms * data.n_sample);
 }
+
 
 void llama_perf_sampler_reset(struct llama_sampler * chain) {
     if (chain == nullptr || chain->iface != &llama_sampler_chain_i) {
@@ -2678,3 +2680,4 @@ void llama_perf_sampler_reset(struct llama_sampler * chain) {
 
     ctx->t_sample_us = ctx->n_sample = 0;
 }
+#endif

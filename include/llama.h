@@ -375,12 +375,6 @@ extern "C" {
         bool no_perf; // whether to measure performance timings
     } llama_sampler_chain_params;
 
-    // used in chat template
-    typedef struct llama_chat_message {
-        const char * role;
-        const char * content;
-    } llama_chat_message;
-
     // lora adapter
     struct llama_adapter_lora;
 
@@ -1055,32 +1049,7 @@ extern "C" {
                          int32_t   text_len_max,
                             bool   remove_special,
                             bool   unparse_special);
-
-    //
-    // Chat templates
-    //
-
-    /// Apply chat template. Inspired by hf apply_chat_template() on python.
-    /// Both "model" and "custom_template" are optional, but at least one is required. "custom_template" has higher precedence than "model"
-    /// NOTE: This function does not use a jinja parser. It only support a pre-defined list of template. See more: https://github.com/ggml-org/llama.cpp/wiki/Templates-supported-by-llama_chat_apply_template
-    /// @param tmpl A Jinja template to use for this chat. If this is nullptr, the model’s default chat template will be used instead.
-    /// @param chat Pointer to a list of multiple llama_chat_message
-    /// @param n_msg Number of llama_chat_message in this chat
-    /// @param add_ass Whether to end the prompt with the token(s) that indicate the start of an assistant message.
-    /// @param buf A buffer to hold the output formatted prompt. The recommended alloc size is 2 * (total number of characters of all messages)
-    /// @param length The size of the allocated buffer
-    /// @return The total number of bytes of the formatted prompt. If is it larger than the size of buffer, you may need to re-alloc it and then re-apply the template.
-    LLAMA_API int32_t llama_chat_apply_template(
-                            const char * tmpl,
-       const struct llama_chat_message * chat,
-                                size_t   n_msg,
-                                  bool   add_ass,
-                                  char * buf,
-                               int32_t   length);
-
-    // Get list of built-in chat templates
-    LLAMA_API int32_t llama_chat_builtin_templates(const char ** output, size_t len);
-
+                            
     //
     // Sampling API
     //
@@ -1339,7 +1308,7 @@ extern "C" {
     //
     // NOTE: Used by llama.cpp examples/tools, avoid using in third-party apps. Instead, do your own performance measurements.
     //
-
+#ifdef LLAMA_USE_PERF
     struct llama_perf_context_data {
         // ms == milliseconds
         double t_start_ms;  // absolute start time
@@ -1369,40 +1338,15 @@ extern "C" {
 
     // print a breakdown of per-device memory use via LLAMA_LOG:
     LLAMA_API void llama_memory_breakdown_print(const struct llama_context * ctx);
-
-    //
-    // training
-    //
-
-    // function that returns whether or not a given tensor contains trainable parameters
-    typedef bool (*llama_opt_param_filter)(const struct ggml_tensor * tensor, void * userdata);
-
-    // always returns true
-    LLAMA_API bool llama_opt_param_filter_all(const struct ggml_tensor * tensor, void * userdata);
-
-    struct llama_opt_params {
-        uint32_t n_ctx_train; // assumed context size post training, use context size specified in llama_context if 0
-
-        llama_opt_param_filter param_filter; // callback for determining which tensors contain trainable parameters
-        void * param_filter_ud;              // userdata for determining which tensors contain trainable parameters
-
-        ggml_opt_get_optimizer_params get_opt_pars; // callback for calculating optimizer parameters
-        void * get_opt_pars_ud;                     // userdata for calculating optimizer parameters
-
-        enum ggml_opt_optimizer_type optimizer_type;
-    };
-
-    LLAMA_API void llama_opt_init(struct llama_context * lctx, struct llama_model * model, struct llama_opt_params lopt_params);
-
-    LLAMA_API void llama_opt_epoch(
-            struct llama_context    * lctx,
-            ggml_opt_dataset_t        dataset,
-            ggml_opt_result_t         result_train,
-            ggml_opt_result_t         result_eval,
-            int64_t                   idata_split,
-            ggml_opt_epoch_callback   callback_train,
-            ggml_opt_epoch_callback   callback_eval);
-
+#else
+// Stub macros for release build or when profiling is disabled
+#define llama_perf_context(...)         ((void)0)
+#define llama_perf_context_print(...)   ((void)0)
+#define llama_perf_context_reset(...)   ((void)0)
+#define llama_perf_sampler(...)         ((void)0)
+#define llama_perf_sampler_print(...)   ((void)0)
+#define llama_perf_sampler_reset(...)   ((void)0)
+#endif
 #ifdef __cplusplus
 }
 #endif

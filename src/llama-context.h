@@ -148,8 +148,9 @@ struct llama_context {
     //
     // perf
     //
-
+#ifdef LLAMA_USE_PERF
     llama_perf_context_data perf_get_data() const;
+#endif
     void perf_reset();
 
     std::map<ggml_backend_buffer_type_t, llama_memory_breakdown_data> memory_breakdown() const;

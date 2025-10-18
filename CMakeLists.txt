@@ -12,6 +12,11 @@ if (NOT XCODE AND NOT MSVC AND NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT LLAMA_ENABLE_PROFILING)
+    set(LLAMA_ENABLE_PROFILING ON)
+endif()
+
+
 message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 # Add path to modules
@@ -71,6 +76,7 @@ endif()
 # debug
 option(LLAMA_ALL_WARNINGS           "llama: enable all compiler warnings"                   ON)
 option(LLAMA_ALL_WARNINGS_3RD_PARTY "llama: enable all compiler warnings in 3rd party libs" OFF)
+option(LLAMA_ENABLE_PROFILING "llama: enable performance profiling utilities" OFF)
 
 # build
 option(LLAMA_FATAL_WARNINGS "llama: enable -Werror flag" OFF)
@@ -106,6 +112,13 @@ if (NOT DEFINED LLAMA_BUILD_COMMIT)
     set(LLAMA_BUILD_COMMIT        ${BUILD_COMMIT})
 endif()
 set(LLAMA_INSTALL_VERSION 0.0.${LLAMA_BUILD_NUMBER})
+
+if (LLAMA_ENABLE_PROFILING)
+    add_compile_definitions(LLAMA_USE_PERF)
+    message(STATUS "llama: Performance profiling is ENABLED")
+else()
+    message(STATUS "llama: Performance profiling is DISABLED")
+endif()
 
 # override ggml options
 set(GGML_ALL_WARNINGS   ${LLAMA_ALL_WARNINGS})
